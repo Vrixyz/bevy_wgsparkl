@@ -34,7 +34,7 @@ pub fn setup_scene(mut commands: Commands) {
      * Ground
      */
     let ground_size = 200.1;
-    let ground_height = 0.1;
+    let ground_height = 2.0;
 
     commands.spawn((
         Transform::from_xyz(0.0, -ground_height, 0.0),
@@ -112,7 +112,7 @@ pub fn setup_mpm_particles(
         dt: (1.0 / 60.0) / (app_state.num_substeps as f32),
     };
 
-    let cell_width = 0.5;
+    let cell_width = 1.0;
     let mut particles = vec![];
 
     for rock in &rocks {
@@ -120,7 +120,7 @@ pub fn setup_mpm_particles(
 
         let rock_size = vector![1.0, 1.0, 1.0];
         let volume = rock_size.x * rock_size.y * rock_size.z;
-        let density = 2700.0;
+        let density = 700.0;
         particles.push(Particle {
             position: vector![position.x, position.y, position.z],
             velocity: Vector3::zeros(),
