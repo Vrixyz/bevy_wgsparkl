@@ -78,7 +78,6 @@ pub fn setup_mpm_particles(
     let num_particles = grid_size_x * grid_size_y * grid_size_z;
 
     let particle_positions = (0..num_particles)
-        .into_iter()
         .map(|i| {
             let x = i % grid_size_x;
             let y = (i / grid_size_x) % grid_size_y;
@@ -142,7 +141,7 @@ pub fn setup_mpm_particles(
                     velocity: Vector3::zeros(),
                     volume: ParticleMassProps::new(density * volume, volume.cbrt() / 2.0),
                     model: ElasticCoefficients::from_young_modulus(
-                        100_000_000.0 * 10f32.powf((z - 1f32)),
+                        100_000_000.0 * 10f32.powf(z - 1f32),
                         0.2 + x * 0.05f32,
                     ),
                     plasticity: Some(DruckerPrager {
@@ -151,7 +150,7 @@ pub fn setup_mpm_particles(
                         h2: 1.6 + z * 0.5f32,
                         h3: 25.0f32.to_radians() + x,
                         ..DruckerPrager::new(
-                            100_000_000.0 * 10f32.powf((z - 1f32)),
+                            100_000_000.0 * 10f32.powf(z - 1f32),
                             0.2 + x * 0.05f32,
                         )
                     }),
@@ -178,8 +177,5 @@ pub fn setup_mpm_particles(
         cell_width,
         60_000,
     );
-    commands.insert_resource(PhysicsContext {
-        data,
-        particles: particles,
-    });
+    commands.insert_resource(PhysicsContext { data, particles });
 }
