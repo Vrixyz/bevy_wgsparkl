@@ -110,7 +110,7 @@ pub fn setup_mpm_particles(
     let device = device.wgpu_device();
 
     if !app_state.restarting {
-        app_state.num_substeps = 16;
+        app_state.num_substeps = 8;
         app_state.gravity_factor = 1.0;
     };
 
