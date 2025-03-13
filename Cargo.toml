@@ -5,7 +5,7 @@ edition = "2024"
 license = "Apache-2.0 OR Custom"
 
 [dependencies]
-bevy = "0.15"
+bevy = { version = "0.15", features = ["shader_format_glsl"] }
 bytemuck = "1"
 async-channel = "2"
 futures = "0.3"
@@ -19,6 +19,9 @@ wgsparkl3d = { git = "https://github.com/dimforge/wgsparkl.git", rev = "f64d3911
 
 parry3d = "0.18"
 bevy_rapier3d = "0.29"
+
+[dev-dependencies]
+bevy_editor_cam = "0.5"
 
 [patch.crates-io]
 # rapier3d = { path = "../rapier/crates/rapier3d" }

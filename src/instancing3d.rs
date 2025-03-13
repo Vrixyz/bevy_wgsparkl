@@ -5,16 +5,17 @@ use bevy::{
     core_pipeline::core_3d::Transparent3d,
     ecs::{
         query::QueryItem,
-        system::{lifetimeless::*, SystemParamItem},
+        system::{SystemParamItem, lifetimeless::*},
     },
     pbr::{
         MeshPipeline, MeshPipelineKey, RenderMeshInstances, SetMeshBindGroup, SetMeshViewBindGroup,
     },
     prelude::*,
     render::{
+        Render, RenderApp, RenderSet,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
         mesh::{
-            allocator::MeshAllocator, MeshVertexBufferLayoutRef, RenderMesh, RenderMeshBufferInfo,
+            MeshVertexBufferLayoutRef, RenderMesh, RenderMeshBufferInfo, allocator::MeshAllocator,
         },
         render_asset::RenderAssets,
         render_phase::{
@@ -23,7 +24,6 @@ use bevy::{
         },
         render_resource::*,
         view::ExtractedView,
-        Render, RenderApp, RenderSet,
     },
 };
 use bytemuck::{Pod, Zeroable};
