@@ -126,103 +126,101 @@ pub fn setup_mpm_particles(
     let device = device.wgpu_device();
 
     if !app_state.restarting {
-        app_state.num_substeps = 25;
+        app_state.num_substeps = 16;
         app_state.gravity_factor = 1.0;
     };
+
+    // Text material.
+    let mat = standard_materials.add(StandardMaterial {
+        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+        alpha_mode: AlphaMode::Blend,
+        unlit: true,
+        ..Default::default()
+    });
 
     let params = SimulationParams {
         gravity: vector![0.0, -9.81, 0.0] * app_state.gravity_factor,
         dt: (1.0 / 60.0) / (app_state.num_substeps as f32),
     };
 
-    let cell_width = 1.0;
+    let cell_width = 1f32;
     let mut particles = vec![];
     let mut configurations = vec![];
 
-    // line with plasticity, varying stiffness
-    for x in -1..2 {
-        let young_modulus = match x {
-            -1 => 500_000.0,
-            0 => 100_000_000.0,
-            1 => 200_000_000.0,
-            _ => unreachable!(),
-        };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0.48);
-        let plasticity = Some(DruckerPrager {
-            h0: 45f32.to_radians(),
-            h1: 70f32.to_radians(),
-            h2: 1.6,
-            h3: 25.0f32.to_radians(),
-            ..DruckerPrager::new(model.lambda, model.mu)
-        });
-        configurations.push(ParticlesConfiguration {
-            coords: IVec2::new(x, -2),
-            split_particles: false,
-            density: 1700f32,
-            model,
-            plasticity,
-            phase: None,
-            description: format!("No Phase.\nmodulus: {}M", young_modulus / 1_000_000f32),
-        });
+    let mut display_text_for_line = |z: f32, text: String| {
+        commands.spawn((
+            Text3d::new(text),
+            Text3dStyling {
+                size: 40.,
+                color: Srgba::new(1., 1., 1., 1.),
+                ..Default::default()
+            },
+            Text3dBounds { width: 500. },
+            Mesh3d::default(),
+            MeshMaterial3d(mat.clone()),
+            Transform::from_translation(Vec3::new(
+                -2f32 * grid_size_x as f32 * 3f32 * 2f32,
+                5f32,
+                z * grid_size_z as f32 * 0.7f32 * 3f32 * 2f32 + grid_size_z as f32 / 2f32,
+            ))
+            .with_scale(Vec3::splat(0.1))
+            .with_rotation(Quat::from_rotation_x(-90f32.to_radians())),
+        ));
+    };
+    {
+        let young_modulus = 1_000_000_000.0;
+        display_text_for_line(-1f32, format!("modulus = {}M", young_modulus / 1_000_000.0));
+        // line with plasticity, varying poisson
+        for x in -1..2 {
+            let poisson_ratio = match x {
+                -1 => 0.0,
+                0 => 0.2,
+                1 => 0.4,
+                _ => unreachable!(),
+            };
+            let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
+            let plasticity = Some(DruckerPrager {
+                h0: 35.0f32.to_radians(),
+                h1: 9.0f32.to_radians(),
+                h2: 0.2,
+                h3: 10.0f32.to_radians(),
+                ..DruckerPrager::new(model.lambda, model.mu)
+            });
+            configurations.push(ParticlesConfiguration {
+                coords: IVec2::new(x, -1),
+                density: 3700f32,
+                model,
+                plasticity,
+                phase: None,
+                description: format!("With plasticity.\n poisson: {}", poisson_ratio),
+            });
+        }
     }
 
-    // line with plasticity, varying density
-    for x in -1..2 {
-        let young_modulus = 1_000_000.0;
-        let density = match x {
-            -1 => 100f32,
-            0 => 1500f32,
-            1 => 6800f32,
-            _ => unreachable!(),
-        };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0.2);
-        let plasticity = Some(DruckerPrager {
-            h0: 45.0f32.to_radians(),
-            h1: 70f32.to_radians(),
-            h2: 1.6,
-            h3: 25.0f32.to_radians(),
-            ..DruckerPrager::new(model.lambda, model.mu)
-        });
-        configurations.push(ParticlesConfiguration {
-            coords: IVec2::new(x, -1),
-            split_particles: false,
-            density: density,
-            model,
-            plasticity,
-            phase: Some(ParticlePhase {
-                phase: 1.0,
-                max_stretch: f32::MAX,
-            }),
-            description: format!("With plasticity.\ndensity: {}", density),
-        });
-    }
-
+    let poisson_ratio = 0f32;
+    display_text_for_line(0f32, format!("poisson = {}", poisson_ratio));
     // line with plasticity, varying young modulus
     for x in -1..2 {
         let young_modulus = match x {
-            -1 => 500_000.0,
+            -1 => 1_000_000.0,
             0 => 10_000_000.0,
-            1 => 200_000_000.0,
+            1 => 100_000_000.0,
             _ => unreachable!(),
         };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0.2);
+        let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
         let plasticity = Some(DruckerPrager {
-            h0: 45.0f32.to_radians(),
-            h1: 70.0f32.to_radians(),
-            h2: 1.6,
-            h3: 25.0f32.to_radians(),
+            h0: 35.0f32.to_radians(),
+            h1: 9.0f32.to_radians(),
+            h2: 0.2,
+            h3: 10.0f32.to_radians(),
             ..DruckerPrager::new(model.lambda, model.mu)
         });
         configurations.push(ParticlesConfiguration {
             coords: IVec2::new(x, 0),
-            split_particles: false,
-            density: 1700f32,
+            density: 3700f32,
             model,
             plasticity,
-            phase: Some(ParticlePhase {
-                phase: 1.0,
-                max_stretch: f32::MAX,
-            }),
+            phase: None,
             description: format!(
                 "With plasticity.\nmodulus: {}M",
                 young_modulus / 1_000_000f32
@@ -238,11 +236,10 @@ pub fn setup_mpm_particles(
             1 => 200_000_000.0,
             _ => unreachable!(),
         };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0.2);
+        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0f32);
         configurations.push(ParticlesConfiguration {
             coords: IVec2::new(x, 1),
-            split_particles: false,
-            density: 1700f32,
+            density: 3700f32,
             model,
             plasticity: None,
             phase: Some(ParticlePhase {
@@ -267,8 +264,7 @@ pub fn setup_mpm_particles(
         let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
         configurations.push(ParticlesConfiguration {
             coords: IVec2::new(x, 2),
-            split_particles: false,
-            density: 1700f32,
+            density: 3700f32,
             model,
             plasticity: None,
             phase: Some(ParticlePhase {
@@ -279,21 +275,13 @@ pub fn setup_mpm_particles(
         });
     }
 
-    // Text material.
-    let mat = standard_materials.add(StandardMaterial {
-        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
-        alpha_mode: AlphaMode::Blend,
-        unlit: true,
-        ..Default::default()
-    });
-
     for (i, c) in configurations.iter().enumerate() {
         let x = c.coords.x as f32 * 3f32;
         let z = c.coords.y as f32 * 3f32;
         let offset = vector![
             x * grid_size_x as f32,
             3f32,
-            z * grid_size_x as f32 * 0.7f32
+            z * grid_size_z as f32 * 0.7f32
         ] * 2f32;
         for particle in &particle_positions {
             let position = vector![particle.x, particle.y, particle.z];
@@ -354,7 +342,6 @@ pub fn setup_mpm_particles(
 #[derive(Debug)]
 pub struct ParticlesConfiguration {
     pub coords: IVec2,
-    pub split_particles: bool,
     pub density: f32,
     pub model: ElasticCoefficients,
     pub plasticity: Option<DruckerPrager>,
