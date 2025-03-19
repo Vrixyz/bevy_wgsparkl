@@ -197,85 +197,94 @@ pub fn setup_mpm_particles(
         }
     }
 
-    let poisson_ratio = 0f32;
-    display_text_for_line(0f32, format!("poisson = {}", poisson_ratio));
-    // line with plasticity, varying young modulus
-    for x in -1..2 {
-        let young_modulus = match x {
-            -1 => 1_000_000.0,
-            0 => 10_000_000.0,
-            1 => 100_000_000.0,
-            _ => unreachable!(),
-        };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
-        let plasticity = Some(DruckerPrager {
-            h0: 35.0f32.to_radians(),
-            h1: 9.0f32.to_radians(),
-            h2: 0.2,
-            h3: 10.0f32.to_radians(),
-            ..DruckerPrager::new(model.lambda, model.mu)
-        });
-        configurations.push(ParticlesConfiguration {
-            coords: IVec2::new(x, 0),
-            density: 3700f32,
-            model,
-            plasticity,
-            phase: None,
-            description: format!(
-                "With plasticity.\nmodulus: {}M",
-                young_modulus / 1_000_000f32
-            ),
-        });
+    {
+        let poisson_ratio = 0f32;
+        display_text_for_line(0f32, format!("poisson = {}", poisson_ratio));
+        // line with plasticity, varying young modulus
+        for x in -1..2 {
+            let young_modulus = match x {
+                -1 => 1_000_000.0,
+                0 => 10_000_000.0,
+                1 => 100_000_000.0,
+                _ => unreachable!(),
+            };
+            let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
+            let plasticity = Some(DruckerPrager {
+                h0: 35.0f32.to_radians(),
+                h1: 9.0f32.to_radians(),
+                h2: 0.2,
+                h3: 10.0f32.to_radians(),
+                ..DruckerPrager::new(model.lambda, model.mu)
+            });
+            configurations.push(ParticlesConfiguration {
+                coords: IVec2::new(x, 0),
+                density: 3700f32,
+                model,
+                plasticity,
+                phase: None,
+                description: format!(
+                    "With plasticity.\nmodulus: {}M",
+                    young_modulus / 1_000_000f32
+                ),
+            });
+        }
     }
 
-    // line without plasticity, varying young modulus
-    for x in -1..2 {
-        let young_modulus = match x {
-            -1 => 1_000_000.0,
-            0 => 50_000_000.0,
-            1 => 200_000_000.0,
-            _ => unreachable!(),
-        };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, 0f32);
-        configurations.push(ParticlesConfiguration {
-            coords: IVec2::new(x, 1),
-            density: 3700f32,
-            model,
-            plasticity: None,
-            phase: Some(ParticlePhase {
-                phase: 1.0,
-                max_stretch: f32::MAX,
-            }),
-            description: format!(
-                "Without plasticity.\nmodulus: {}M",
-                young_modulus / 1_000_000.0
-            ),
-        });
+    {
+        let poisson_ratio = 0f32;
+        display_text_for_line(1f32, format!("poisson = {}", poisson_ratio));
+        // line without plasticity, varying young modulus
+        for x in -1..2 {
+            let young_modulus = match x {
+                -1 => 1_000_000.0,
+                0 => 50_000_000.0,
+                1 => 200_000_000.0,
+                _ => unreachable!(),
+            };
+            let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
+            configurations.push(ParticlesConfiguration {
+                coords: IVec2::new(x, 1),
+                density: 3700f32,
+                model,
+                plasticity: None,
+                phase: Some(ParticlePhase {
+                    phase: 1.0,
+                    max_stretch: f32::MAX,
+                }),
+                description: format!(
+                    "Without plasticity.\nmodulus: {}M",
+                    young_modulus / 1_000_000.0
+                ),
+            });
+        }
     }
-    // line without plasticity, varying poisson_ratio
-    for x in -1..2 {
+    {
         let young_modulus = 1_000_000.0;
-        let poisson_ratio = match x {
-            -1 => -0.2f32,
-            0 => 0.3,
-            1 => 0.48,
-            _ => unreachable!(),
-        };
-        let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
-        configurations.push(ParticlesConfiguration {
-            coords: IVec2::new(x, 2),
-            density: 3700f32,
-            model,
-            plasticity: None,
-            phase: Some(ParticlePhase {
-                phase: 1.0,
-                max_stretch: f32::MAX,
-            }),
-            description: format!("Without plasticity.\npoisson: {}", poisson_ratio),
-        });
+        display_text_for_line(2f32, format!("modulus = {}M", young_modulus / 1_000_000.0));
+        // line without plasticity, varying poisson_ratio
+        for x in -1..2 {
+            let poisson_ratio = match x {
+                -1 => -0.2f32,
+                0 => 0.3,
+                1 => 0.48,
+                _ => unreachable!(),
+            };
+            let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
+            configurations.push(ParticlesConfiguration {
+                coords: IVec2::new(x, 2),
+                density: 3700f32,
+                model,
+                plasticity: None,
+                phase: Some(ParticlePhase {
+                    phase: 1.0,
+                    max_stretch: f32::MAX,
+                }),
+                description: format!("Without plasticity.\npoisson: {}", poisson_ratio),
+            });
+        }
     }
 
-    for (i, c) in configurations.iter().enumerate() {
+    for c in configurations.iter() {
         let x = c.coords.x as f32 * 3f32;
         let z = c.coords.y as f32 * 3f32;
         let offset = vector![
