@@ -174,7 +174,10 @@ pub fn setup_mpm_particles(
         let z = -1f32;
         display_text_at_world_pos(
             get_position_for_line(z),
-            format!("modulus = {}M", young_modulus / 1_000_000.0),
+            format!(
+                "With plasticity.\nmodulus = {}M",
+                young_modulus / 1_000_000.0
+            ),
         );
         // line with plasticity, varying poisson
         for x in -1..2 {
@@ -198,7 +201,7 @@ pub fn setup_mpm_particles(
                 model,
                 plasticity,
                 phase: None,
-                description: format!("With plasticity.\n poisson: {}", poisson_ratio),
+                description: format!("poisson: {}", poisson_ratio),
             });
         }
     }
@@ -208,7 +211,7 @@ pub fn setup_mpm_particles(
         let z = 0f32;
         display_text_at_world_pos(
             get_position_for_line(z),
-            format!("poisson = {}", poisson_ratio),
+            format!("With plasticity.\npoisson = {}", poisson_ratio),
         );
         // line with plasticity, varying young modulus
         for x in -1..2 {
@@ -232,10 +235,7 @@ pub fn setup_mpm_particles(
                 model,
                 plasticity,
                 phase: None,
-                description: format!(
-                    "With plasticity.\nmodulus: {}M",
-                    young_modulus / 1_000_000f32
-                ),
+                description: format!("modulus: {}M", young_modulus / 1_000_000f32),
             });
         }
     }
@@ -245,7 +245,7 @@ pub fn setup_mpm_particles(
         let z = 1f32;
         display_text_at_world_pos(
             get_position_for_line(z),
-            format!("poisson = {}", poisson_ratio),
+            format!("Without plasticity.\npoisson = {}", poisson_ratio),
         );
         // line without plasticity, varying young modulus
         for x in -1..2 {
@@ -265,10 +265,7 @@ pub fn setup_mpm_particles(
                     phase: 1.0,
                     max_stretch: f32::MAX,
                 }),
-                description: format!(
-                    "Without plasticity.\nmodulus: {}M",
-                    young_modulus / 1_000_000.0
-                ),
+                description: format!("modulus: {}M", young_modulus / 1_000_000.0),
             });
         }
     }
@@ -277,7 +274,10 @@ pub fn setup_mpm_particles(
         let z = 2f32;
         display_text_at_world_pos(
             get_position_for_line(z),
-            format!("modulus = {}M", young_modulus / 1_000_000.0),
+            format!(
+                "Without plasticity.\nmodulus = {}M",
+                young_modulus / 1_000_000.0
+            ),
         );
         // line without plasticity, varying poisson_ratio
         for x in -1..2 {
@@ -297,7 +297,7 @@ pub fn setup_mpm_particles(
                     phase: 1.0,
                     max_stretch: f32::MAX,
                 }),
-                description: format!("Without plasticity.\npoisson: {}", poisson_ratio),
+                description: format!("poisson: {}", poisson_ratio),
             });
         }
     }
