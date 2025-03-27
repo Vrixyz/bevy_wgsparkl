@@ -179,7 +179,7 @@ fn step_simulation_multisteps(
             };
             // `GpuTimestamps` uses a buffer of 2 `Timestamps`, one for the start and one for the end of the operation,
             // it's holding 9 floats (see `timings` below).
-            debug_assert!(
+            assert!(
                 timestamps_ms.len() >= num_substeps * 2 * 9,
                 "GpuTimestamps should be initialized with a bigger size"
             );

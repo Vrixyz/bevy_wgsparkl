@@ -146,8 +146,14 @@ pub fn setup_mpm_particles(
     let cell_width = 1f32;
     let mut particles = vec![];
     let mut configurations = vec![];
-
-    let mut display_text_for_line = |z: f32, text: String| {
+    let get_position_for_line = |z: f32| -> bevy::math::Vec3 {
+        bevy::math::Vec3::new(
+            -2f32 * grid_size_x as f32 * 3f32 * 2f32,
+            5f32,
+            z * grid_size_z as f32 * 0.7f32 * 3f32 * 2f32 + grid_size_z as f32 / 2f32,
+        )
+    };
+    let mut display_text_at_world_pos = |world_pos: bevy::math::Vec3, text: String| {
         commands.spawn((
             Text3d::new(text),
             Text3dStyling {
@@ -158,18 +164,18 @@ pub fn setup_mpm_particles(
             Text3dBounds { width: 500. },
             Mesh3d::default(),
             MeshMaterial3d(mat.clone()),
-            Transform::from_translation(Vec3::new(
-                -2f32 * grid_size_x as f32 * 3f32 * 2f32,
-                5f32,
-                z * grid_size_z as f32 * 0.7f32 * 3f32 * 2f32 + grid_size_z as f32 / 2f32,
-            ))
-            .with_scale(Vec3::splat(0.1))
-            .with_rotation(Quat::from_rotation_x(-90f32.to_radians())),
+            Transform::from_translation(world_pos)
+                .with_scale(Vec3::splat(0.1))
+                .with_rotation(Quat::from_rotation_x(-90f32.to_radians())),
         ));
     };
     {
         let young_modulus = 1_000_000_000.0;
-        display_text_for_line(-1f32, format!("modulus = {}M", young_modulus / 1_000_000.0));
+        let z = -1f32;
+        display_text_at_world_pos(
+            get_position_for_line(z),
+            format!("modulus = {}M", young_modulus / 1_000_000.0),
+        );
         // line with plasticity, varying poisson
         for x in -1..2 {
             let poisson_ratio = match x {
@@ -187,7 +193,7 @@ pub fn setup_mpm_particles(
                 ..DruckerPrager::new(model.lambda, model.mu)
             });
             configurations.push(ParticlesConfiguration {
-                coords: IVec2::new(x, -1),
+                coords: IVec2::new(x, z as i32),
                 density: 3700f32,
                 model,
                 plasticity,
@@ -199,7 +205,11 @@ pub fn setup_mpm_particles(
 
     {
         let poisson_ratio = 0f32;
-        display_text_for_line(0f32, format!("poisson = {}", poisson_ratio));
+        let z = 0f32;
+        display_text_at_world_pos(
+            get_position_for_line(z),
+            format!("poisson = {}", poisson_ratio),
+        );
         // line with plasticity, varying young modulus
         for x in -1..2 {
             let young_modulus = match x {
@@ -217,7 +227,7 @@ pub fn setup_mpm_particles(
                 ..DruckerPrager::new(model.lambda, model.mu)
             });
             configurations.push(ParticlesConfiguration {
-                coords: IVec2::new(x, 0),
+                coords: IVec2::new(x, z as i32),
                 density: 3700f32,
                 model,
                 plasticity,
@@ -232,7 +242,11 @@ pub fn setup_mpm_particles(
 
     {
         let poisson_ratio = 0f32;
-        display_text_for_line(1f32, format!("poisson = {}", poisson_ratio));
+        let z = 1f32;
+        display_text_at_world_pos(
+            get_position_for_line(z),
+            format!("poisson = {}", poisson_ratio),
+        );
         // line without plasticity, varying young modulus
         for x in -1..2 {
             let young_modulus = match x {
@@ -243,7 +257,7 @@ pub fn setup_mpm_particles(
             };
             let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
             configurations.push(ParticlesConfiguration {
-                coords: IVec2::new(x, 1),
+                coords: IVec2::new(x, z as i32),
                 density: 3700f32,
                 model,
                 plasticity: None,
@@ -260,7 +274,11 @@ pub fn setup_mpm_particles(
     }
     {
         let young_modulus = 1_000_000.0;
-        display_text_for_line(2f32, format!("modulus = {}M", young_modulus / 1_000_000.0));
+        let z = 2f32;
+        display_text_at_world_pos(
+            get_position_for_line(z),
+            format!("modulus = {}M", young_modulus / 1_000_000.0),
+        );
         // line without plasticity, varying poisson_ratio
         for x in -1..2 {
             let poisson_ratio = match x {
@@ -271,7 +289,7 @@ pub fn setup_mpm_particles(
             };
             let model = ElasticCoefficients::from_young_modulus(young_modulus, poisson_ratio);
             configurations.push(ParticlesConfiguration {
-                coords: IVec2::new(x, 2),
+                coords: IVec2::new(x, z as i32),
                 density: 3700f32,
                 model,
                 plasticity: None,
@@ -311,24 +329,11 @@ pub fn setup_mpm_particles(
                 phase: c.phase,
             });
         }
-        commands.spawn((
-            Text3d::new(&c.description),
-            Text3dStyling {
-                size: 40.,
-                color: Srgba::new(1., 1., 1., 1.),
-                ..Default::default()
-            },
-            Text3dBounds { width: 500. },
-            Mesh3d::default(),
-            MeshMaterial3d(mat.clone()),
-            Transform::from_translation(Vec3::new(
-                offset.x,
-                5f32,
-                offset.z + 10f32 + grid_size_z as f32,
-            ))
-            .with_scale(Vec3::splat(0.1))
-            .with_rotation(Quat::from_rotation_x(-90f32.to_radians())),
-        ));
+
+        display_text_at_world_pos(
+            Vec3::new(offset.x, 5f32, offset.z + 10f32 + grid_size_z as f32),
+            c.description.clone(),
+        );
     }
 
     println!("Number of simulated particles: {}", particles.len());
